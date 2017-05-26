@@ -14,12 +14,12 @@ const {
   Scene
 } = THREE
 
+const ThreeView = Expo.createTHREEViewClass(THREE)
+console.log('AppJS:ThreeView', ThreeView)
 export default class App extends Component {
-  ThreeView = Expo.createTHREEViewClass(THREE)
   meshes = []
 
   componentWillMount () {
-    console.log('cwm')
     this.setupScene()
     this.loadTestContent()
     this.loadPano()
@@ -57,44 +57,24 @@ export default class App extends Component {
   }
 
   async loadPano () {
+    const {ThreeView} = this
     console.log('loadPano')
-    function loadImageMaterial (asset, threeView) {
-      console.log('loadImageMaterial')
-      const texture = threeView.textureFromAsset(asset)
-      console.log('texture', texture)
-      texture.minFilter = texture.magFilter = THREE.NearestFilter
-      texture.needsUpdate = true
 
-      const material = new THREE.MeshBasicMaterial({
-        map: texture,
-        transparent: true // Use the image's alpha channel for alpha.
-      })
+    const panoAsset = Expo.Asset.fromModule(require('./360-img.jpg'))
+    await panoAsset.downloadAsync()
 
-      return material
-    }
+    const panoGeometry = new THREE.SphereGeometry(100, 60, 40)
+    panoGeometry.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1))
 
-    try {
-      const panoAsset = Expo.Asset.fromModule(require('./360-img.jpg'))
-      await panoAsset.downloadAsync()
+    const panoMaterial = loadImageMaterial(panoAsset)
 
-      console.log('panoAsset')
-      console.log(JSON.stringify(panoAsset, null, 2))
+    this.panoMesh = new THREE.Mesh(panoGeometry, panoMaterial)
+    this.panoMesh.material.side = THREE.BackSide
+    this.panoMesh.name = 'pano'
 
-      const panoGeometry = new THREE.SphereGeometry(100, 60, 40)
-      panoGeometry.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1))
-
-      // const panoMaterial = loadImageMaterial(panoAsset, this.ThreeView)
-      // const imgMaterial = loadImageMaterial(panoAsset, this.ThreeView)
-      const panoMaterial = new MeshBasicMaterial({color: 0xAAAAAA})
-
-      this.panoMesh = new THREE.Mesh(panoGeometry, panoMaterial)
-      this.panoMesh.material.side = THREE.BackSide
-      this.panoMesh.name = 'pano'
-
-      this.scene.add(this.panoMesh)
-    } catch (e) {
-      Alert.alert('Error when loading', e.message)
-    }
+    // ERROR occurs here
+    // Can't find variable:document
+    // this.scene.add(this.panoMesh)
   }
 
   update = (dt) => {
@@ -105,8 +85,6 @@ export default class App extends Component {
   }
 
   render() {
-    const {ThreeView} = this
-
     return (
       <ThreeView
         style={{flex: 1}}
@@ -117,4 +95,17 @@ export default class App extends Component {
       />
     )
   }
+}
+
+function loadImageMaterial (asset) {
+  const texture = ThreeView.textureFromAsset(asset)
+  texture.minFilter = texture.magFilter = THREE.NearestFilter
+  texture.needsUpdate = true
+
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true // Use the image's alpha channel for alpha.
+  })
+
+  return material
 }
