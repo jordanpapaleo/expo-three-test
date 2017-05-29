@@ -11,11 +11,11 @@ const {
   Mesh,
   MeshBasicMaterial,
   PerspectiveCamera,
-  Scene
+  Scene,
+  DataTexture
 } = THREE
 
 const ThreeView = Expo.createTHREEViewClass(THREE)
-console.log('AppJS:ThreeView', ThreeView)
 export default class App extends Component {
   meshes = []
 
@@ -57,24 +57,39 @@ export default class App extends Component {
   }
 
   async loadPano () {
-    const {ThreeView} = this
     console.log('loadPano')
+    global.document = {}
+    const {ThreeView} = this
 
     const panoAsset = Expo.Asset.fromModule(require('./360-img.jpg'))
     await panoAsset.downloadAsync()
+    console.log('panoAsset', panoAsset)
 
     const panoGeometry = new THREE.SphereGeometry(100, 60, 40)
     panoGeometry.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1))
+    console.log('panoGeometry', panoGeometry)
 
-    const panoMaterial = loadImageMaterial(panoAsset)
+    // https://threejs.org/docs/index.html#api/textures/DataTexture
+    const texture = new DataTexture(panoAsset.uri, panoAsset.width, panoAsset.height)
+    texture.magFilter = THREE.NearestFilter
+    texture.minFilter = THREE.NearestFilter
+    texture.needsUpdate = true
+    texture.isDataTexture = true
+    console.log('texture', texture)
 
-    this.panoMesh = new THREE.Mesh(panoGeometry, panoMaterial)
-    this.panoMesh.material.side = THREE.BackSide
-    this.panoMesh.name = 'pano'
+    const panoMaterial = new MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      fog: false
+    })
+    console.log('panoMaterial', panoMaterial)
 
-    // ERROR occurs here
-    // Can't find variable:document
-    // this.scene.add(this.panoMesh)
+    const panoMesh = new THREE.Mesh(panoGeometry, panoMaterial)
+    panoMesh.material.side = THREE.BackSide
+    panoMesh.name = 'pano'
+    console.log('panoMesh', panoMesh)
+
+    this.scene.add(panoMesh)
   }
 
   update = (dt) => {
@@ -95,17 +110,4 @@ export default class App extends Component {
       />
     )
   }
-}
-
-function loadImageMaterial (asset) {
-  const texture = ThreeView.textureFromAsset(asset)
-  texture.minFilter = texture.magFilter = THREE.NearestFilter
-  texture.needsUpdate = true
-
-  const material = new THREE.MeshBasicMaterial({
-    map: texture,
-    transparent: true // Use the image's alpha channel for alpha.
-  })
-
-  return material
 }
