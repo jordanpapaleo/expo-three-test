@@ -61,7 +61,8 @@ export default class App extends Component {
     global.document = {}
     const {ThreeView} = this
 
-    const panoAsset = Expo.Asset.fromModule(require('./360-img.jpg'))
+    // const panoAsset = Expo.Asset.fromModule(require('./360-img.jpg'))
+    const panoAsset = Expo.Asset.fromModule(require('./test.jpg'))
     await panoAsset.downloadAsync()
     console.log('panoAsset', panoAsset)
 
@@ -71,17 +72,14 @@ export default class App extends Component {
 
     // https://threejs.org/docs/index.html#api/textures/DataTexture
     const texture = new DataTexture(panoAsset.uri, panoAsset.width, panoAsset.height)
+
     texture.magFilter = THREE.NearestFilter
     texture.minFilter = THREE.NearestFilter
     texture.needsUpdate = true
     texture.isDataTexture = true
-    console.log('texture', texture)
 
-    const panoMaterial = new MeshBasicMaterial({
-      map: texture,
-      transparent: true,
-      fog: false
-    })
+    const panoMaterial = new MeshBasicMaterial({map: texture})
+
     console.log('panoMaterial', panoMaterial)
 
     const panoMesh = new THREE.Mesh(panoGeometry, panoMaterial)
