@@ -9,6 +9,11 @@ export default class App extends Component {
   }
 
   componentDidMount () {
+    // we must call createTemplate here on the initial load to avoid some odd react errors
+    this.setState({
+      aframeTemplate: this.createTemplate()
+    })
+
     setTimeout(() => {
       this.setState({
         imgUrl: '360image2.JPG'
@@ -17,7 +22,7 @@ export default class App extends Component {
   }
 
   componentDidUpdate () {
-    const template = this.updateTemplate()
+    const template = this.createTemplate()
 
     this.webview.injectJavaScript(`
       var container = document.querySelector('.template')
@@ -29,19 +34,22 @@ export default class App extends Component {
     console.log('evt.nativeEvent.data: ', evt.nativeEvent.data)
   }
 
-  updateTemplate() {
-    const {imgUrl} = this.state
-    const markup = [
-      `<a-scene antialias="true">`,
-        `<a-entity scale="1 1 -1" material="shader: flat; src: ${imgUrl}" id="sky" geometry="primitive: sphere; radius: 100" />`,
-      `</a-scene>`
-    ]
+  createTemplate(imgUrl = this.state.imgUrl) {
 
-    return markup.join('')
+    return ReactDOMServer.renderToStaticMarkup(
+      <a-scene antialias="true">
+        <a-entity
+          scale="1 1 -1"
+          material={`shader: flat; src: ${imgUrl}`}
+          id="sky"
+          geometry="primitive: sphere; radius: 100"
+        />
+      </a-scene>
+    )
   }
 
   render() {
-    const template = this.updateTemplate()
+    const {aframeTemplate} = this.state
 
     return (
       <WebView
@@ -49,7 +57,7 @@ export default class App extends Component {
         source={webapp}
         injectedJavaScript={`
           var container = document.querySelector('.template')
-          container.innerHTML = '${template}'
+          container.innerHTML = '${aframeTemplate}'
         `}
         style={{marginTop: 20}}
         onMessage={this.handleMessage}
