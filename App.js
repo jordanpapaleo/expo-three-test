@@ -9,11 +9,11 @@ export default class App extends Component {
   }
 
   componentDidMount () {
-    setTimeout(() => {
-      this.setState({
-        imgUrl: '360image2.JPG'
-      })
-    }, 5000)
+    // setTimeout(() => {
+    //   this.setState({
+    //     imgUrl: '360image2.JPG'
+    //   })
+    // }, 5000)
   }
 
   componentDidUpdate () {
@@ -26,14 +26,45 @@ export default class App extends Component {
   }
 
   handleMessage(evt) {
-    console.log('evt.nativeEvent.data: ', evt.nativeEvent.data)
+    console.log(JSON.parse(evt.nativeEvent.data))
   }
 
   updateTemplate() {
     const {imgUrl} = this.state
+    const geometry = `primitive: plane; height: 1; width: 1`
+    const evtSet1 = `_event: mousedown; scale: 1 1 1`
+    const evtSet2 = `_event: mouseup; scale: 1.2 1.2 1`
+    const evtSet3 = `_event: mouseenter; scale: 1.2 1.2 1`
+    const evtSet4 = `_event: mouseleave; scale: 1 1 1`
+    const props = {
+      // geometry: geometry,
+      // class: 'link',
+      'event-set__1': evtSet1,
+      'event-set__2': evtSet2,
+      'event-set__3': evtSet3,
+      'event-set__4': evtSet4
+    }
+
+    if (!imgUrl) return []
+
     const markup = [
       `<a-scene antialias="true">`,
-        `<a-entity scale="1 1 -1" material="shader: flat; src: ${imgUrl}" id="sky" geometry="primitive: sphere; radius: 100" />`,
+        `<a-assets>`,
+          `<img id="city" crossorigin="anonymous" src="${imgUrl}">`,
+          `<img id="cubes" crossorigin="anonymous" src="${imgUrl}">`,
+          `<img id="city" crossorigin="anonymous" src="${imgUrl}">`,
+          `<img id="sechelt" crossorigin="anonymous" src="${imgUrl}">`,
+        `</a-assets>`,
+        // `<a-sky id="image-360" radius="10" src="#city"></a-sky>`,
+        `<a-entity id="links" layout="type: line; margin: 1.5" position="0 0 -4">`,
+          `<a-entity class="link" geometry="${geometry}" material="shader: flat; src: #cubes" event-set__1="${evtSet1}" event-set__2="${evtSet2}" event-set__3="${evtSet3}" event-set__4="${evtSet4}"></a-entity>`,
+          // `<a-entity class="link" geometry="${geometry}" material="shader: flat; src: #cubes" event-set__1="${evtSet1}" event-set__2="${evtSet2}" event-set__3="${evtSet3}" event-set__4="${evtSet4}"></a-entity>`,
+          // `<a-entity class="link" geometry="${geometry}" material="shader: flat; src: #city" event-set__1="${evtSet1}" event-set__2="${evtSet2}" event-set__3="${evtSet3}" event-set__4="${evtSet4}"></a-entity>`,
+          // `<a-entity class="link" geometry="${geometry}" material="shader: flat; src: #sechelt" event-set__1="${evtSet1}" event-set__2="${evtSet2}" event-set__3="${evtSet3}" event-set__4="${evtSet4}"></a-entity>`,
+        `</a-entity>`,
+        `<a-entity id="camera" camera look-controls>`,
+          `<a-cursor id="cursor" animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150" animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500" event-set__1="_event: mouseenter; color: springgreen" event-set__2="_event: mouseleave; color: black" fuse="true" raycaster="objects: .link"></a-cursor>`,
+        `</a-entity>`,
       `</a-scene>`
     ]
 
