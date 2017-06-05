@@ -4,11 +4,14 @@
     <meta charset="utf-8">
     <title></title>
     <script src="../node_modules/aframe/dist/aframe-master.js"></script>
-    <script src="main.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="../node_modules/react/dist/react.min.js"></script>
+    <script src="../node_modules/react-dom/dist/react-dom.min.js"></script>
+    <script src="../node_modules/react-dom/dist/react-dom-server.min.js"></script>
   </head>
   <body>
     <button onclick="handleClick()">Send Message</button>
-    <div class="template"></div>
+    <div class="aframe-container"></div>
     <!-- <a-scene antialias="true">
       <a-entity
         scale="1 1 -1"
@@ -17,5 +20,6 @@
         geometry="primitive: sphere; radius: 100"
       />
     </a-scene> -->
+    <script src="main.js" type="text/babel" data-plugins="transform-react-jsx" data-presets="es2015,stage-1"></script>
   </body>
 </html>
